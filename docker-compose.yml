@@ -37,8 +37,9 @@ services:
     image: makrust:dev
     environment:
       DATABASE_URL: postgres://postgres:postgres@db:5432/makrust
+      APP_ENVIRONMENT: development
     ports:
-      - "3000:3000"
+      - "8000:8000"
     depends_on:
       migrate:
         condition: service_completed_successfully
