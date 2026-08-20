@@ -1,4 +1,2 @@
-application:
-  base_url: "http://0.0.0.0"
 database:
   require_ssl: false

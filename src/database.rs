@@ -1,4 +1,4 @@
-use dotenv::dotenv;
+use crate::configuration::DatabaseSettings;
 use sqlx::migrate::MigrateError;
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use std::time::Duration;
@@ -7,17 +7,14 @@ const CONNECT_MAX_ATTEMPTS: u32 = 3;
 const CONNECT_BASE_DELAY: Duration = Duration::from_millis(500);
 const CONNECT_MAX_DELAY: Duration = Duration::from_secs(5);
 
-pub async fn get_pool() -> PgPool {
-    dotenv().ok();
-    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-
+pub async fn get_pool(database_settings: &DatabaseSettings) -> PgPool {
     let mut attempt = 1;
     loop {
         match PgPoolOptions::new()
             .max_connections(10)
             // any http call timeout should be longer than this
             .acquire_timeout(std::time::Duration::from_secs(3))
-            .connect(&db_url)
+            .connect_with(database_settings.with_db())
             .await
         {
             Ok(pool) => {

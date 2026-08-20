@@ -1,13 +1,15 @@
+use makrust::configuration::get_configuration;
 use makrust::database::{get_pool, run_migrations};
 
 #[tokio::main]
 async fn main() {
-    let pool = get_pool().await;
+    let configuration = get_configuration().expect("Failed to load configuration.");
+    let pool = get_pool(&configuration.database).await;
 
     println!("Running migrations...");
     if let Err(error) = run_migrations(&pool).await {
         println!("Failed to run migrations: {}", error);
         std::process::exit(1);
     }
-    println!("Migrations complete");
+    println!("Migrations complete.");
 }

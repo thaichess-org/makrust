@@ -16,6 +16,7 @@ services:
       timeout: 5s
       retries: 3
 
+  # only used to run migrations, it's destroyed right after.
   migrate:
     build:
       context: .
@@ -25,7 +26,8 @@ services:
     # is required here to actually replace it with the migrate binary.
     entrypoint: ["./migrate"]
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/makrust
+      APP_ENVIRONMENT: development
+      APP_DATABASE__HOST: db
     depends_on:
       db:
         condition: service_healthy
@@ -36,13 +38,13 @@ services:
       dockerfile: Dockerfile
     image: makrust:dev
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/makrust
       APP_ENVIRONMENT: development
+      APP_DATABASE__HOST: db
     ports:
       - "8000:8000"
     depends_on:
       migrate:
         condition: service_completed_successfully
-
+        
 volumes:
   db_data:
