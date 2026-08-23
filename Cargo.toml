@@ -5,15 +5,15 @@ edition = "2024"
 
 [dependencies]
 axum = "0.8.9"
-serde_json = "1.0.143"
 tokio = { version = "1.53.1", features = ["full"] }
 sqlx = { version = "0.9", features = [ "runtime-tokio", "tls-rustls-ring-webpki", "postgres", "chrono", "uuid" ] }
-dotenv = "0.15.0"
 serde = { version = "1.0.151", features = ["derive"] }
 chrono = { version = "0.4.45", features = ["serde"] }
-uuid = { version = "1.24.1", features = ["serde", "v4"] }
-axum-test = "21.0.0"
 config = "0.15.25"
+validator = "0.21.0"
+argon2 = { version = "0.5.3", features = ["std"] }
 
 [dev-dependencies]
+axum-test = "21.0.0"
 testcontainers-modules = { version = "0.15.0", features = ["postgres"] }
+serde_json = "1.0.143"

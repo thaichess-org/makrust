@@ -8,6 +8,8 @@ use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt, runners::
 
 pub struct TestApp {
     pub server: TestServer,
+    // in case we need to run SQL directly from the test
+    pub _db_pool: sqlx::Pool<sqlx::Postgres>,
     // Held only to keep the container alive for the lifetime of the test;
     // dropping it stops and removes the container.
     _container: ContainerAsync<Postgres>,
@@ -44,12 +46,12 @@ pub async fn new_test_app() -> TestApp {
         require_ssl: false,
     };
 
-    let pool = get_pool(&database_settings).await;
+    let pool: sqlx::Pool<sqlx::Postgres> = get_pool(&database_settings).await;
     run_migrations(&pool)
         .await
         .expect("Failed to run migrations on test database");
 
-    let app = create_router(pool);
+    let app = create_router(pool.clone());
 
     let server = TestServer::builder()
         // Preserve cookies across requests
@@ -60,6 +62,7 @@ pub async fn new_test_app() -> TestApp {
 
     TestApp {
         server,
+        _db_pool: pool,
         _container: container,
     }
 }

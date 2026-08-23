@@ -1,4 +1,4 @@
-use crate::helpers::new_test_app;
+use crate::startup::new_test_app;
 use axum::http::StatusCode;
 
 #[tokio::test]

@@ -14,6 +14,9 @@ RUN apt update && apt install lld clang -y
 # copy all files from our working environment to our Docker image
 COPY . .
 
+# this helps sqlx to map the queries and check the types
+ENV SQLX_OFFLINE=true 
+
 # Let's build our binary!
 # We'll use the release profile to make it fast
 RUN cargo build --release
@@ -38,9 +41,7 @@ RUN apt-get update -y \
 # to our runtime environment
 COPY --from=builder /app/target/release/makrust makrust
 # `migrate` applies pending migrations and exits; it is not run by
-# ENTRYPOINT. Run it as a one-off step (e.g. `docker run --rm <image> ./migrate`)
-# before rolling out new `makrust` containers, so replicas never race to
-# apply the same migration on boot.
+# ENTRYPOINT. Run with pre deploy command on DO
 COPY --from=builder /app/target/release/migrate migrate
 
 # we need the configuration file at runtime
