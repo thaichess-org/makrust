@@ -10,16 +10,26 @@ pub struct NewUser {
     pub password_hash: String,
 }
 
-pub enum NewUserError {
+pub enum PasswordError {
     HashingError(Argon2Error),
-    UsernameParsingError,
-    EmailParsingError,
-    PasswordError,
+    InvalidPassword,
 }
 
-impl From<Argon2Error> for NewUserError {
+pub enum NewUserError {
+    UsernameParsingError,
+    EmailParsingError,
+    PasswordError(PasswordError),
+}
+
+impl From<Argon2Error> for PasswordError {
     fn from(err: Argon2Error) -> Self {
-        NewUserError::HashingError(err)
+        PasswordError::HashingError(err)
+    }
+}
+
+impl From<PasswordError> for NewUserError {
+    fn from(err: PasswordError) -> Self {
+        NewUserError::PasswordError(err)
     }
 }
 
@@ -185,32 +195,37 @@ impl AsRef<str> for Password {
 }
 
 impl Password {
-    pub fn parse(s: String) -> Result<Password, NewUserError> {
+    pub fn parse(s: String) -> Result<Password, PasswordError> {
         if s.trim().len() < 8 || s.trim().len() > 64 || s.trim().contains(char::is_whitespace) {
-            return Err(NewUserError::PasswordError);
+            return Err(PasswordError::InvalidPassword);
         } else {
             Ok(Self(s))
         }
     }
 
     // TODO: test these 2 functions
-    pub fn hash(&self) -> Result<String, NewUserError> {
+    pub fn hash(&self) -> Result<String, PasswordError> {
         let salt = SaltString::generate(&mut OsRng);
         let argon2 = Argon2::default();
         let passsword_hash = argon2
             .hash_password(self.as_ref().as_bytes(), &salt)
-            .map_err(|e| NewUserError::HashingError(e))?
+            .map_err(PasswordError::HashingError)?
             .to_string();
         Ok(passsword_hash)
     }
 
-    pub fn _verify_password(password: String, password_hash: String) -> Result<bool, NewUserError> {
-        let parsed_hash =
-            PasswordHash::new(&password_hash).map_err(|e| NewUserError::HashingError(e))?;
+    pub fn verify_password(
+        password: &String,
+        password_hash: &String,
+    ) -> Result<bool, PasswordError> {
+        let parsed_hash = PasswordHash::new(&password_hash).map_err(PasswordError::HashingError)?;
         let argon2 = Argon2::default();
         argon2
             .verify_password(&password.as_bytes(), &parsed_hash)
-            .map_err(|e| NewUserError::HashingError(e))
+            .map_err(|e| match e {
+                Argon2Error::Password => PasswordError::InvalidPassword,
+                e => PasswordError::HashingError(e),
+            })
             .map(|_| true)
     }
 }

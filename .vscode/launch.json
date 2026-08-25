@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug makrust server",
+      "cargo": {
+        "args": ["build", "--bin=makrust", "--package=makrust"],
+        "filter": {
+          "name": "makrust",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "APP_ENVIRONMENT": "development",
+        "APP_APPLICATION__PORT": "8001"
+      }
+    }
+  ]
+}

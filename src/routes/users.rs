@@ -1,4 +1,4 @@
-use crate::domain::{NewUser, NewUserError};
+use crate::domain::{NewUser, NewUserError, Password, PasswordError};
 use axum::Json;
 use axum::extract::{Form, Path, State};
 use axum::http::StatusCode;
@@ -9,6 +9,8 @@ use sqlx::postgres::PgPool;
 #[derive(Debug, serde::Serialize)]
 pub struct UserRecord {
     username: String,
+    #[serde(skip_serializing)]
+    password_hash: String,
     display_name: Option<String>,
     bio: Option<String>,
     country_code: Option<String>,
@@ -16,6 +18,12 @@ pub struct UserRecord {
     is_active: bool,
     created_at: DateTime<Utc>,
     last_seen_at: Option<DateTime<Utc>>,
+}
+
+#[derive(serde::Deserialize)]
+pub(crate) struct SignIn {
+    username: String,
+    password: String,
 }
 
 #[derive(serde::Deserialize)]
@@ -35,14 +43,7 @@ pub async fn user(
     State(db_pool): State<PgPool>,
     Path(username): Path<String>,
 ) -> Result<Json<UserRecord>, StatusCode> {
-    let user = sqlx::query_as!(
-        UserRecord,
-        r#"SELECT username, display_name, bio, country_code, role, is_active, created_at, last_seen_at
-        FROM users WHERE username = $1"#,
-        username
-    )
-    .fetch_one(&db_pool)
-    .await;
+    let user = fetch_user(&db_pool, &username).await;
 
     match user {
         Ok(user) => Ok(Json(user)),
@@ -76,7 +77,7 @@ pub async fn create_user(
                 }),
             ));
         }
-        Err(NewUserError::PasswordError) => {
+        Err(NewUserError::PasswordError(PasswordError::InvalidPassword)) => {
             return Err((
                 StatusCode::BAD_REQUEST,
                 Json(ErrorResponse {
@@ -86,7 +87,7 @@ pub async fn create_user(
             ));
         }
         // TODO: I'm eating this error here, better to log it later
-        Err(NewUserError::HashingError(_)) => {
+        Err(NewUserError::PasswordError(PasswordError::HashingError(_))) => {
             return Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(ErrorResponse {
@@ -100,7 +101,7 @@ pub async fn create_user(
     let registered_user = sqlx::query_as!(
         UserRecord,
         r#"INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3)
-        RETURNING username, display_name, bio, country_code, role, is_active, created_at, last_seen_at"#,
+        RETURNING username, password_hash, display_name, bio, country_code, role, is_active, created_at, last_seen_at"#,
         new_user.username.as_ref(),
         new_user.email.as_ref(),
         new_user.password_hash,
@@ -126,4 +127,39 @@ pub async fn create_user(
             }),
         )),
     }
+}
+
+pub async fn sign_in(
+    State(db_pool): State<PgPool>,
+    Form(sign_in): Form<SignIn>,
+) -> Result<Json<UserRecord>, StatusCode> {
+    let user = match fetch_user(&db_pool, &sign_in.username).await {
+        Ok(user) => user,
+        Err(sqlx::Error::RowNotFound) => return Err(StatusCode::UNAUTHORIZED),
+        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+    };
+
+    let is_match = match Password::verify_password(&sign_in.password, &user.password_hash) {
+        Ok(_) => true,
+        Err(PasswordError::InvalidPassword) => false,
+        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+    };
+
+    if is_match {
+        // TODO: create user session
+        Ok(Json(user))
+    } else {
+        Err(StatusCode::UNAUTHORIZED)
+    }
+}
+
+pub async fn fetch_user(db_pool: &PgPool, username: &String) -> Result<UserRecord, sqlx::Error> {
+    sqlx::query_as!(
+        UserRecord,
+        r#"SELECT username, password_hash, display_name, bio, country_code, role, is_active, created_at, last_seen_at
+        FROM users WHERE username = $1"#,
+        username
+    )
+    .fetch_one(db_pool)
+    .await
 }
