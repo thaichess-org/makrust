@@ -173,6 +173,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "axum-extra"
+version = "0.12.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "be44683b41ccb9ab2d23a5230015c9c3c55be97a25e4428366de8873103f7970"
+dependencies = [
+ "axum",
+ "axum-core",
+ "bytes",
+ "cookie",
+ "futures-core",
+ "futures-util",
+ "http",
+ "http-body",
+ "http-body-util",
+ "mime",
+ "pin-project-lite",
+ "tower-layer",
+ "tower-service",
+ "tracing",
+]
+
+[[package]]
 name = "axum-test"
 version = "21.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -470,6 +492,7 @@ version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a373e3602691c3cdea496d2f0ee5935151e6168fe87739483c463db1b2f2f87"
 dependencies = [
+ "percent-encoding",
  "time",
  "version_check",
 ]
@@ -1461,6 +1484,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "ipnetwork"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf370abdafd54d13e54a620e8c3e1145f28e46cc9d704bc6d94414559df41763"
+
+[[package]]
 name = "itertools"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1599,13 +1628,16 @@ version = "0.1.0"
 dependencies = [
  "argon2",
  "axum",
+ "axum-extra",
  "axum-test",
  "chrono",
  "config",
+ "cookie",
  "serde",
  "serde_json",
  "sqlx",
  "testcontainers-modules",
+ "time",
  "tokio",
  "validator",
 ]
@@ -2574,6 +2606,7 @@ dependencies = [
  "hashbrown 0.16.1",
  "hashlink",
  "indexmap 2.14.0",
+ "ipnetwork",
  "log",
  "memchr",
  "percent-encoding",
@@ -2678,6 +2711,7 @@ dependencies = [
  "hex",
  "hkdf",
  "hmac",
+ "ipnetwork",
  "itoa",
  "log",
  "md-5",

@@ -8,8 +8,8 @@
 
 ## Auth & Sessions
 
-- [ ] Sign in logic.
-- [ ] Session creation logic — update `users.last_seen_at` when it is `NULL` or older than ~15 minutes.
+- [x] Sign in logic.
+- [x] Session creation logic — update `users.last_seen_at` when it is `NULL` or older than ~15 minutes.
 - [ ] Sign out logic — remove user's session.
 - [ ] Password reset via email.
 

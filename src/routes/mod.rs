@@ -3,4 +3,4 @@ mod router;
 mod users;
 
 pub use health_check::health_check;
-pub use router::create_router;
+pub use router::{AppState, create_router};

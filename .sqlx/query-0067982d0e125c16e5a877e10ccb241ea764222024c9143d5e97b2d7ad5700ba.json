@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users SET last_seen_at = now() - interval '30 minutes'\n           WHERE username = 'thaiChessMaster'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "0067982d0e125c16e5a877e10ccb241ea764222024c9143d5e97b2d7ad5700ba"
+}

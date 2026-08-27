@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) as \"count!\" FROM sessions s\n           JOIN users u ON u.id = s.user_id\n           WHERE u.username = 'thaiChessMaster'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "6db9be6094a86a4bac3c234352cc29b5d554ea4d3b6b3cc8cc6d1d45f00e0ca7"
+}

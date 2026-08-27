@@ -7,3 +7,6 @@ database:
   username: "postgres"
   password: "postgres"
   database_name: "makrust"
+auth:
+  # How many days a session stays valid for after signing in
+  session_ttl_days: 30

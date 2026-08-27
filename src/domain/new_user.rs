@@ -78,7 +78,7 @@ impl Username {
 
 #[cfg(test)]
 mod username_tests {
-    use crate::domain::new_user::Username;
+    use super::*;
     #[test]
     fn a_50_characters_username_is_valid() {
         let name = "a".repeat(50);
@@ -142,7 +142,7 @@ impl UserEmail {
 
 #[cfg(test)]
 mod email_tests {
-    use crate::domain::new_user::UserEmail;
+    use super::*;
 
     #[test]
     fn valid_emails_are_parsed_sucessfully() {
@@ -214,10 +214,7 @@ impl Password {
         Ok(passsword_hash)
     }
 
-    pub fn verify_password(
-        password: &String,
-        password_hash: &String,
-    ) -> Result<bool, PasswordError> {
+    pub fn verify(password: &String, password_hash: &String) -> Result<bool, PasswordError> {
         let parsed_hash = PasswordHash::new(&password_hash).map_err(PasswordError::HashingError)?;
         let argon2 = Argon2::default();
         argon2
@@ -232,7 +229,7 @@ impl Password {
 
 #[cfg(test)]
 mod password_tests {
-    use crate::domain::new_user::Password;
+    use super::*;
 
     #[test]
     fn short_password_is_not_valid() {

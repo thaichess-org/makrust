@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE sessions SET expires_at = now() - interval '1 minute'\n           WHERE user_id = (SELECT id FROM users WHERE username = 'thaiChessMaster')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "033d8d914dd11cb677aa0265a81d769ae3e838cffdb795e7161671221474d00b"
+}

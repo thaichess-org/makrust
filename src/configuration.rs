@@ -41,9 +41,16 @@ impl DatabaseSettings {
 }
 
 #[derive(serde::Deserialize, Clone)]
+pub struct AuthSettings {
+    pub session_ttl_days: i64,
+    pub cookie_secure: bool,
+}
+
+#[derive(serde::Deserialize, Clone)]
 pub struct Settings {
     pub application: ApplicationSettings,
     pub database: DatabaseSettings,
+    pub auth: AuthSettings,
 }
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {

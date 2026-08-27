@@ -1,7 +1,7 @@
 use axum_test::TestServer;
-use makrust::configuration::DatabaseSettings;
+use makrust::configuration::{AuthSettings, DatabaseSettings};
 use makrust::database::{get_pool, run_migrations};
-use makrust::routes::create_router;
+use makrust::routes::{AppState, create_router};
 use std::ops::Deref;
 use testcontainers_modules::postgres::Postgres;
 use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt, runners::AsyncRunner};
@@ -51,12 +51,18 @@ pub async fn new_test_app() -> TestApp {
         .await
         .expect("Failed to run migrations on test database");
 
-    let app = create_router(pool.clone());
+    let state = AppState {
+        db_pool: pool.clone(),
+        auth: AuthSettings {
+            session_ttl_days: 30,
+            cookie_secure: false,
+        },
+    };
+    let app = create_router(state);
 
     let server = TestServer::builder()
-        // Preserve cookies across requests
-        // for the session cookie to work.
-        // .save_cookies()
+        // Preserve cookies across requests within a single test
+        .save_cookies()
         .expect_success_by_default()
         .build(app);
 
