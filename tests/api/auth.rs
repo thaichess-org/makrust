@@ -3,9 +3,8 @@ use axum::http::StatusCode;
 use cookie::{Cookie, SameSite};
 
 // signs a user up, then signs them in, returning the
-// running test app (with the session cookie already saved into it, since
-// new_test_app() builds TestServer with .save_cookies()).
-async fn sign_up_and_sign_in(server: &axum_test::TestServer, username: &str) {
+// session_id cookie.
+async fn sign_up_and_sign_in(server: &axum_test::TestServer, username: &str) -> Cookie<'static> {
     server
         .post("/users")
         .form(&serde_json::json!({
@@ -15,13 +14,15 @@ async fn sign_up_and_sign_in(server: &axum_test::TestServer, username: &str) {
         }))
         .await;
 
-    server
+    let response = server
         .post("/sign-in")
         .form(&serde_json::json!({
             "username": username,
             "password": "password123",
         }))
         .await;
+
+    response.cookie("session_id")
 }
 
 #[tokio::test]
@@ -200,8 +201,50 @@ async fn stale_last_seen_at_is_refreshed_on_authenticated_request() {
     .await
     .expect("Failed to read last_seen_at");
 
-    // "Recent" here just means within the last minute — plenty of slack for
-    // however long the test itself took to run.
     let age = chrono::Utc::now() - last_seen_at;
     assert!(age < chrono::Duration::minutes(1));
+}
+
+#[tokio::test]
+async fn session_cookie_is_removed_after_signing_out() {
+    let app = new_test_app().await;
+    sign_up_and_sign_in(&app.server, "thaiChessMaster").await;
+
+    let response = app.server.post("/sign-out").await;
+    assert_eq!(response.status_code(), StatusCode::NO_CONTENT);
+
+    // cookie should be removed
+    let cookie: Cookie = response.cookie("session_id");
+    assert_eq!(cookie.value(), "");
+
+    // with the cookie removed, user is not authorized
+    let response = app.server.get("/users/me").expect_failure().await;
+    assert_eq!(response.status_code(), StatusCode::UNAUTHORIZED);
+}
+
+#[tokio::test]
+async fn session_should_be_revoked_after_signing_out() {
+    let app = new_test_app().await;
+    let session_cookie = sign_up_and_sign_in(&app.server, "thaiChessMaster").await;
+    let session_id: sqlx::types::Uuid = session_cookie
+        .value()
+        .parse()
+        .expect("session cookie value should be a valid UUID");
+
+    let response = app.server.post("/sign-out").await;
+    assert_eq!(response.status_code(), StatusCode::NO_CONTENT);
+
+    // cookie should be removed
+    let cookie: Cookie = response.cookie("session_id");
+    assert_eq!(cookie.value(), "");
+
+    // check sessions.revoked_at now has a date/time value
+    let revoked_at: Option<chrono::DateTime<chrono::Utc>> = sqlx::query_scalar!(
+        r#"SELECT revoked_at FROM sessions WHERE id = $1"#,
+        session_id
+    )
+    .fetch_one(&app._db_pool)
+    .await
+    .expect("Failed to fetch session revoked_at");
+    assert!(revoked_at.is_some());
 }

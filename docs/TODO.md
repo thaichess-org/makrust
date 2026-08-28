@@ -3,14 +3,13 @@
 ## App level
 
 - [ ] Set up logs and tracing for the backend.
-- [ ] Research best and cheapest way to see these logs and have app observability, see best way or service to
-      set up some alerts if app degrades.
+- [ ] Research best and cheapest way to see these logs and have app observability, see best way or service to set up some alerts if app degrades.
 
 ## Auth & Sessions
 
 - [x] Sign in logic.
 - [x] Session creation logic — update `users.last_seen_at` when it is `NULL` or older than ~15 minutes.
-- [ ] Sign out logic — remove user's session.
+- [x] Sign out logic — remove user's session.
 - [ ] Password reset via email.
 
 ## Email

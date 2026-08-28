@@ -29,5 +29,6 @@ pub fn create_router(state: AppState) -> Router {
         .route("/users/{username}", get(users::user))
         .route("/users", post(users::create_user))
         .route("/sign-in", post(users::sign_in))
+        .route("/sign-out", post(users::sign_out))
         .with_state(state)
 }

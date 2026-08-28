@@ -1,4 +1,4 @@
-use crate::auth::{AuthenticatedUser, SESSION_COOKIE_NAME};
+use crate::auth::{AuthenticatedUser, IP_ADDRESS_HEADER, SESSION_COOKIE_NAME};
 use crate::domain::{NewUser, NewUserError, Password, PasswordError};
 use crate::routes::AppState;
 use axum::Json;
@@ -8,6 +8,7 @@ use axum_extra::extract::cookie::{Cookie, CookieJar, SameSite};
 use chrono::{DateTime, Duration as ChronoDuration, Utc};
 use sqlx;
 use sqlx::postgres::PgPool;
+use sqlx::types::Uuid;
 use sqlx::types::ipnetwork::IpNetwork;
 use time::Duration as CookieDuration;
 
@@ -180,7 +181,7 @@ pub async fn sign_in(
         .map(str::to_owned);
 
     let ip_address: Option<IpNetwork> = headers
-        .get("x-forwarded-for")
+        .get(IP_ADDRESS_HEADER)
         // `X-Forwarded-For` can be a comma-separated list of proxy hops;
         // the first entry is the original client.
         .and_then(|value| value.to_str().ok())
@@ -226,6 +227,29 @@ pub async fn sign_in(
     // apply the cookie jar's Set-Cookie header(s) to the response, then
     // use the Json<UserRecord> as the response body.
     Ok((jar.add(cookie), Json(user)))
+}
+
+/// revoke user session and remove session cookie from headers
+pub async fn sign_out(
+    State(app_state): State<AppState>,
+    jar: CookieJar,
+) -> Result<(CookieJar, StatusCode), StatusCode> {
+    let session_id = jar
+        .get(SESSION_COOKIE_NAME)
+        .and_then(|cookie| Uuid::parse_str(cookie.value()).ok())
+        .ok_or(StatusCode::UNAUTHORIZED)?;
+
+    sqlx::query!(
+        "UPDATE sessions SET revoked_at = now() WHERE id = $1",
+        session_id
+    )
+    .execute(&app_state.db_pool)
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let cleared = Cookie::build(SESSION_COOKIE_NAME).path("/").build();
+
+    Ok((jar.remove(cleared), StatusCode::NO_CONTENT))
 }
 
 pub async fn fetch_user(db_pool: &PgPool, username: &String) -> Result<UserRecord, sqlx::Error> {

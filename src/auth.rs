@@ -7,6 +7,7 @@ use chrono::{DateTime, Utc};
 use sqlx::types::Uuid;
 
 pub const SESSION_COOKIE_NAME: &str = "session_id";
+pub const IP_ADDRESS_HEADER: &str = "x-forwarded-for";
 
 #[derive(Debug, Clone)]
 pub struct AuthenticatedUser {
