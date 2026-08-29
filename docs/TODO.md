@@ -14,7 +14,8 @@
 
 ## Email
 
-- [ ] Send emails using Postmark.
+- [x] Send emails using Postmark.
+- [ ] Check about templates when sending emails instead of creating the body manually, check the ones Postmark already has available. We need one to reset the password and another to remind users about their moves for correspondence, when time is running out.
 
 ## User
 

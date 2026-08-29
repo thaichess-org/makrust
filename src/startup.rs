@@ -17,6 +17,7 @@ impl Application {
         let state = AppState {
             db_pool: pool.clone(),
             auth: configuration.auth.clone(),
+            email: configuration.email.clone(),
         };
         let router = create_router(state);
         let listener = tokio::net::TcpListener::bind(&address).await.unwrap();

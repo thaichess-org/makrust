@@ -229,7 +229,7 @@ pub async fn sign_in(
     Ok((jar.add(cookie), Json(user)))
 }
 
-/// revoke user session and remove session cookie from headers
+/// revokes user session and removes session cookie from headers
 pub async fn sign_out(
     State(app_state): State<AppState>,
     jar: CookieJar,

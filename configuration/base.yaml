@@ -10,3 +10,6 @@ database:
 auth:
   # How many days a session stays valid for after signing in
   session_ttl_days: 30
+email:
+  base_url: "https://api.postmarkapp.com/email"
+  sender: "admin@thaichess.org"

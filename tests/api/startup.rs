@@ -1,5 +1,5 @@
 use axum_test::TestServer;
-use makrust::configuration::{AuthSettings, DatabaseSettings};
+use makrust::configuration::{AuthSettings, DatabaseSettings, EmailSettings};
 use makrust::database::{get_pool, run_migrations};
 use makrust::routes::{AppState, create_router};
 use std::ops::Deref;
@@ -56,6 +56,12 @@ pub async fn new_test_app() -> TestApp {
         auth: AuthSettings {
             session_ttl_days: 30,
             cookie_secure: false,
+        },
+        email: EmailSettings {
+            // using port 1 on purpose, use wiremock if you need to call Postmark
+            base_url: "http://127.0.0.1:1".to_string(),
+            sender: "admin@thaichess.org".to_string(),
+            server_token: "test-token-not-real".to_string(),
         },
     };
     let app = create_router(state);

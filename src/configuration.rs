@@ -1,3 +1,4 @@
+use dotenv::dotenv;
 use sqlx::postgres::{PgConnectOptions, PgSslMode};
 
 #[derive(serde::Deserialize, Clone)]
@@ -47,16 +48,25 @@ pub struct AuthSettings {
 }
 
 #[derive(serde::Deserialize, Clone)]
+pub struct EmailSettings {
+    pub base_url: String,
+    pub sender: String,
+    pub server_token: String,
+}
+
+#[derive(serde::Deserialize, Clone)]
 pub struct Settings {
     pub application: ApplicationSettings,
     pub database: DatabaseSettings,
     pub auth: AuthSettings,
+    pub email: EmailSettings,
 }
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
+    dotenv().ok();
+
     let base_path = std::env::current_dir().expect("Failed to determine current directory");
     let configuration_directory = base_path.join("configuration");
-
     // get running environment, default to development
     let environment: Environment = std::env::var("APP_ENVIRONMENT")
         .unwrap_or_else(|_| "development".into())
@@ -64,6 +74,17 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
         .expect("Failed to parse APP_ENVIRONMENT.");
     println!("App running in APP_ENVIRONMENT: {}", environment.as_str());
     let environment_filename = format!("{}.yaml", environment.as_str());
+
+    // fallback to "token" in dev just to get the app running if laoding .env fails
+    let email_server_token: String = match std::env::var("EMAIL_SERVER_TOKEN") {
+        Ok(token) => token,
+        Err(_) => match environment {
+            Environment::Development => "token".into(),
+            Environment::Production => {
+                panic!("Email token must be set")
+            }
+        },
+    };
 
     // load configuration settings from ./configuration
     let settings = config::Config::builder()
@@ -79,6 +100,7 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
                 .prefix_separator("_")
                 .separator("__"),
         )
+        .set_override("email.server_token", email_server_token)?
         .build()?;
 
     settings.try_deserialize::<Settings>()

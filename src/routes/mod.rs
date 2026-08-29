@@ -1,3 +1,4 @@
+mod email;
 mod health_check;
 mod router;
 mod users;

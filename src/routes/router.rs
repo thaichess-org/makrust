@@ -1,5 +1,5 @@
-use crate::configuration::AuthSettings;
-use crate::routes::{health_check, users};
+use crate::configuration::{AuthSettings, EmailSettings};
+use crate::routes::{email, health_check, users};
 use axum::{
     Router,
     extract::FromRef,
@@ -11,6 +11,7 @@ use sqlx::postgres::PgPool;
 pub struct AppState {
     pub db_pool: PgPool,
     pub auth: AuthSettings,
+    pub email: EmailSettings,
 }
 
 // Lets handlers that only need the state's db_pool keep
@@ -24,7 +25,9 @@ impl FromRef<AppState> for PgPool {
 pub fn create_router(state: AppState) -> Router {
     Router::new()
         .route("/health-check", get(health_check))
-        // this route is only to test the auth functionality, delete later
+        // * remove later, this just for testing.
+        .route("/email/{recipient}", get(email::send))
+        // * this route is only to test the auth functionality, delete later
         .route("/users/me", get(users::me))
         .route("/users/{username}", get(users::user))
         .route("/users", post(users::create_user))
