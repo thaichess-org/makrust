@@ -17,8 +17,18 @@ Use [GitHub issues](https://github.com/thaichess-org/makrust/issues) for bug rep
 
 ## Installation
 
-```
+```bash
 cargo run
+```
+
+## Development setup
+
+This repo has a pre-commit hook (in `.githooks/`) that runs formatters, linters, and
+the test suite for both the backend and the frontend, and blocks the commit if any of
+them fail. Since git doesn't track hook configuration, enable it once per clone:
+
+```bash
+git config core.hooksPath .githooks
 ```
 
 ## License

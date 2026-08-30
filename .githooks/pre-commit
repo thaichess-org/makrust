@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+#
+# Pre-commit hook: runs formatters/linters/tests for both the frontend
+# and the backend, and blocks the commit if any of them fail.
+#
+# For it to actually run, the repo's core.hooksPath must point at this directory:
+#
+#   git config core.hooksPath .githooks
+#
+# That's a per-clone setting, so anyone who clones this repo fresh needs to
+# run that command once (see README.md).
+#
+# To bypass this hook for a single commit (e.g. a WIP commit on a dev branch),
+# use `git commit --no-verify`.
+# DO NOT BYPASS FOR master branch
+
+set -uo pipefail
+
+# run hook from repo's root.
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+
+# Track whether any step failed.
+FAILED=0
+
+# Runs a single check step, but never exits the script itself until the end
+# so we don't have to fix and rerun to see all the failing steps.
+run_step() {
+  local description="$1"
+  shift
+  echo ""
+  echo "==> ${description}"
+  if ! "$@"; then
+    echo "==> FAILED: ${description}"
+    FAILED=1
+  fi
+}
+
+echo "Running pre-commit checks (backend + frontend)..."
+
+# --- Backend (Rust) ---------------------------------------------------------
+
+cd "${ROOT_DIR}" || exit 1
+
+# The integration tests under tests/ use testcontainers to spin up a real
+# Postgres container, so `cargo test` needs a running Docker daemon.
+if ! docker info >/dev/null 2>&1; then
+  echo ""
+  echo "WARNING: Docker does not appear to be running. The backend's"
+  echo "integration tests use testcontainers and need Docker to run."
+fi
+
+run_step "cargo fmt --check" cargo fmt --all -- --check
+
+# SQLX_OFFLINE=true tells sqlx's compile-time query macros to validate
+# queries against the cached metadata in .sqlx/ instead of connecting to a
+# live database, so clippy can type-check query macros without Postgres.
+run_step "cargo clippy" env SQLX_OFFLINE=true cargo clippy --all-targets --all-features -- -D warnings
+
+run_step "cargo test" env SQLX_OFFLINE=true cargo test
+
+# --- Frontend (React) ---------------------------------------------------
+
+cd "${ROOT_DIR}/frontend" || exit 1
+
+run_step "frontend fmt:check (oxfmt)" npm run fmt:check
+run_step "frontend lint (oxlint)" npm run lint
+# `-- run` forces vitest into single-run mode instead of its default watch
+# mode, which would otherwise hang the commit indefinitely.
+run_step "frontend test (vitest)" npm run test -- run
+
+# --- Result ------------------------------------------------------------------
+
+echo ""
+if [ "${FAILED}" -ne 0 ]; then
+  echo "Pre-commit checks failed. Fix the issues above and try committing again."
+  echo "(Or run 'git commit --no-verify' to skip these checks, if you're sure.)"
+  exit 1
+fi
+
+echo "All pre-commit checks passed."
+exit 0

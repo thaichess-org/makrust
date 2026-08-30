@@ -197,7 +197,7 @@ impl AsRef<str> for Password {
 impl Password {
     pub fn parse(s: String) -> Result<Password, PasswordError> {
         if s.trim().len() < 8 || s.trim().len() > 64 || s.trim().contains(char::is_whitespace) {
-            return Err(PasswordError::InvalidPassword);
+            Err(PasswordError::InvalidPassword)
         } else {
             Ok(Self(s))
         }
@@ -214,11 +214,11 @@ impl Password {
         Ok(passsword_hash)
     }
 
-    pub fn verify(password: &String, password_hash: &String) -> Result<bool, PasswordError> {
-        let parsed_hash = PasswordHash::new(&password_hash).map_err(PasswordError::HashingError)?;
+    pub fn verify(password: &String, password_hash: &str) -> Result<bool, PasswordError> {
+        let parsed_hash = PasswordHash::new(password_hash).map_err(PasswordError::HashingError)?;
         let argon2 = Argon2::default();
         argon2
-            .verify_password(&password.as_bytes(), &parsed_hash)
+            .verify_password(password.as_bytes(), &parsed_hash)
             .map_err(|e| match e {
                 Argon2Error::Password => PasswordError::InvalidPassword,
                 e => PasswordError::HashingError(e),

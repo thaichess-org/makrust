@@ -53,8 +53,9 @@
 
 - [x] Set up React UI - setup linter, prettier, select library for state management, queries and css.
 - [x] Create sign in/up components.
+- [x] Set up tests
 - [ ] Work on the basic look of the player's profile. Maybe find way to create some avatar on the FE?
 - [ ] Add React bindings for the makruk-ground board library.
 - [ ] Deploy makrukops library to NPM.
 - [ ] Find best way to trigger alerts for when user receives a message or app event. Maybe user SSE?
-- [ ] top banner alert to remind users of things like confirm email.
+- [ ] Top banner alert to remind users of things like confirm email.
