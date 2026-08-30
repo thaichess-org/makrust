@@ -1,3 +1,4 @@
+// * NOTE: check unione.io as an alternative to Postmark for better pricing.
 use crate::configuration::EmailSettings;
 use postmark::api::Body;
 use postmark::api::email::SendEmailRequest;

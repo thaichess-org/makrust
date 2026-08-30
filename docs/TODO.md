@@ -15,7 +15,20 @@
 ## Email
 
 - [x] Send emails using Postmark.
+- Emails to send:
+      - [ ] confirm email. Must validate email to play correspondence. Either send challenge or accept.
+      - [ ] reset password
+      - [ ] email change
+      - [ ] after delete account
+      - [ ] correspondence reminder, 1day/12hours before deadline
 - [ ] Check about templates when sending emails instead of creating the body manually, check the ones Postmark already has available. We need one to reset the password and another to remind users about their moves for correspondence, when time is running out.
+
+## Alerts
+
+- [ ] friend requests
+- [ ] game challenge
+- [ ] your turn to play for correspondce play
+- [ ] also correspondence reminder, 1day/12hours before deadline
 
 ## User
 
@@ -38,9 +51,10 @@
 
 ## Frontend
 
-- [ ] Set up React UI - setup linter, prettier, select library for state management, queries and css.
+- [x] Set up React UI - setup linter, prettier, select library for state management, queries and css.
 - [ ] Create sign in/out components.
 - [ ] Work on the basic look of the player's profile. Maybe find way to create some avatar on the FE?
 - [ ] Add React bindings for the makruk-ground board library.
 - [ ] Deploy makrukops library to NPM.
 - [ ] Find best way to trigger alerts for when user receives a message or app event. Maybe user SSE?
+- [ ] top banner alert to remind users of things like confirm email.
