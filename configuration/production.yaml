@@ -5,3 +5,4 @@ database:
 auth:
  # send session over HTTPS only
  cookie_secure: true
+ frontend_origin: "https://thaichess.org"

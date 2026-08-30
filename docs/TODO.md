@@ -52,7 +52,7 @@
 ## Frontend
 
 - [x] Set up React UI - setup linter, prettier, select library for state management, queries and css.
-- [ ] Create sign in/out components.
+- [x] Create sign in/up components.
 - [ ] Work on the basic look of the player's profile. Maybe find way to create some avatar on the FE?
 - [ ] Add React bindings for the makruk-ground board library.
 - [ ] Deploy makrukops library to NPM.

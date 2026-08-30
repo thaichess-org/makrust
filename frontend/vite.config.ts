@@ -1,7 +1,12 @@
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  // tanstackRouter must come first so react has access to the routes
+  plugins: [tanstackRouter({ target: 'react', autoCodeSplitting: true }), react()],
+  server: {
+    port: 3000,
+  },
 })

@@ -45,6 +45,8 @@ impl DatabaseSettings {
 pub struct AuthSettings {
     pub session_ttl_days: i64,
     pub cookie_secure: bool,
+    // helps set up CORS
+    pub frontend_origin: String,
 }
 
 #[derive(serde::Deserialize, Clone)]

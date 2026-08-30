@@ -2,3 +2,5 @@ database:
   require_ssl: false
 auth:
   cookie_secure: false
+  # Vite's dev server
+  frontend_origin: "http://localhost:3000"

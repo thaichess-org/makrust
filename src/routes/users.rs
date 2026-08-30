@@ -83,7 +83,7 @@ pub async fn create_user(
                 StatusCode::BAD_REQUEST,
                 Json(ErrorResponse {
                     error: "username",
-                    message: "Please only use letters, numbers, and a max length of 50 characters.",
+                    message: "Username must only have letters, numbers, and a max length of 50 characters.",
                 }),
             ));
         }

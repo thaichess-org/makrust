@@ -56,6 +56,7 @@ pub async fn new_test_app() -> TestApp {
         auth: AuthSettings {
             session_ttl_days: 30,
             cookie_secure: false,
+            frontend_origin: "http://localhost:3000".to_string(),
         },
         email: EmailSettings {
             // using port 1 on purpose, use wiremock if you need to call Postmark
